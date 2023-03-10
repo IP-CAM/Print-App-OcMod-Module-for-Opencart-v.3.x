@@ -19,8 +19,8 @@ class ModelExtensionModulePrintDotApp extends Model {
 		if ($perms->num_rows == 0) return;
         
         $openPerm = json_decode($perms->row['permission'], true);
-        if (!in_array('common/printapp_designs', $openPerm['access']))
-            $openPerm['access'][] = 'common/printapp_designs';
+        if (!in_array('extension/printapp_designs', $openPerm['access']))
+            $openPerm['access'][] = 'extension/printapp_designs';
 		
 		$this->db->query("UPDATE " . DB_PREFIX . "user_group SET permission = '" . $this->db->escape(json_encode($openPerm)) . "' WHERE name = 'Administrator'");
 	}
