@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
-	<name>Print.App</name>
+	<name>PrintApp</name>
     <version>1.0.0</version>
     <code>print_dot_app_web2print</code>
     <author>Print.App Ltd</author>
@@ -11,8 +11,6 @@
 			<add position="before"><![CDATA[ 
 			
                 $this->load->model('setting/setting');
-				$data['print_dot_app_api_value'] = $this->config->get('print_dot_app_api_value');
-				$data['print_dot_app_secret_value'] = $this->config->get('print_dot_app_secret_value');
 				
                 $data['current_design_id'] = -1;
                 $data['current_upload_opt'] = 0;
@@ -22,15 +20,17 @@
                 if (isset($this->request->get['product_id'])) {
                     $this->load->model('extension/module/print_dot_app');
                     $pitch_val = $this->model_extension_module_print_dot_app->getPrintDotAppWeb2Print($this->request->get['product_id']);
-                    $pitch_val = explode(":", $pitch_val);
-
+                    
+                    $data['print_dot_app_current_design'] = $pitch_val;
+                    
+                    $pitch_val = explode("__", $pitch_val);
                     if (count($pitch_val) > 1) {
                         $data['current_design_id'] = $pitch_val[0];
-                        $data['current_upload_opt'] = $pitch_val[1];
-                        $data['current_display_opt'] = (isset($pitch_val[2]) ? $pitch_val[2] : '');
-						$data['customizationRequired'] = (isset($pitch_val[3]) ? $pitch_val[3] : 1);
+                        $data['current_display_opt'] = (isset($pitch_val[3]) ? $pitch_val[3] : '');
                     }
                 }
+                $data['print_dot_app_design_tree_js'] = HTTPS_SERVER . 	'view/template/extension/module/js/designTreeSelect.js';
+				$data['print_dot_app_client_server'] = HTTPS_SERVER;
 			]]></add>
 		</operation>
 	</file>
@@ -84,7 +84,7 @@
 	  					</div>
 	  					<script>
 	  					  (function(){
-								console.log('cino start');
+								
 								var ppOptions = jQuery("#print_dot_app_web2print_option_values");
 		          				var displayMode = jQuery('[name="pda_pick_display_mode"]');
 		          				displayMode.val(ppOptions.val().split('__')[2]);
@@ -92,7 +92,7 @@
 		          				displayMode.change(_updatePdaDisplayMode);
 		          				function _updatePdaDisplayMode () {
 		          					var a = ppOptions.val().split('__');
-		          					if (a.length == 0) for (let i = 0; i++; i < 2) a.push(''); 
+		          					if (a.length == 0) for (let i = 0; i++; i < 3) a.push(''); 
 		          					a[2] = displayMode[displayMode.length > 1 ? 1 : 0].value;
 		          					ppOptions.val(a.join('__'));	
 		          				}
@@ -107,12 +107,13 @@
 							  	ppOptions.val(a.join('__'));	
 							  } */
 		          			})();
-          			
-	  						// window.print_dot_app_current_design = '{{ product_option.value }}';
+          					
+          					window.print_dot_app_current_design = '{{ print_dot_app_current_design }}';
+	  						window.printappOrignServer = '{{ print_dot_app_client_server }}';
 			    			window.printappocin = '{{ user_token }}';
 							(function(){
 								const script = document.createElement('script');
-								script.src = `${location.origin}/admin/view/template/extension/module/js/designTreeSelect.js`;
+								script.src = '{{ print_dot_app_design_tree_js }}';
 								document.head.appendChild(script);
 							})();
 	  					</script>
@@ -132,8 +133,8 @@
 						function _updatePdaDisplayMode () {
 							var ppOptions = jQuery("#print_dot_app_web2print_option_values");
 							var a = ppOptions.val().split('__');
-							if (a.length == 0) for (let i = 0; i++; i < 2) a.push(''); 
-							a[1] = displayMode[displayMode.length > 1 ? 1 : 0].value;
+							if (a.length == 0) for (let i = 0; i++; i < 3) a.push(''); 
+							a[2] = displayMode[displayMode.length > 1 ? 1 : 0].value;
 							ppOptions.val(a.join('__'));	
 						}
 						
@@ -148,11 +149,12 @@
 							ppOptions.val(a.join('__'));	
 						} */
 					})();
-					
+					window.print_dot_app_current_design = '{{ print_dot_app_current_design }}';
+					window.printappOrignServer = '{{ print_dot_app_client_server }}';
 	    			window.printappocin = '{{ user_token }}';
 					(function(){
 						const script = document.createElement('script');
-						script.src = `${location.origin}/admin/view/template/extension/module/js/designTreeSelect.js`;
+						script.src = '{{ print_dot_app_design_tree_js }}';
 						document.head.appendChild(script);
 					})();
 				}
@@ -162,7 +164,7 @@
             <search><![CDATA[if (item['type'] == 'text') {]]></search>
             <add position="before"><![CDATA[ 
                 if (item['type'] == 'print_dot_app_web2print' && typeof product_option == "undefined") {
-                	html += `<div style="display:none" id="print_dot_app_web2print_option_form">
+                	html += `<div id="print_dot_app_web2print_option_form">
 						<div class="form-group">
 							<label class="col-sm-2 control-label" for="display_mode">Display Mode</label>
 							<div class="col-sm-10">
@@ -189,7 +191,7 @@
 								</span>
 							</div>
 	  					</div>
-	  					<input id="print_dot_app_web2print_option_values" type="hidden" name="product_option[' + option_row + '][value]" value="" id="input-value' + option_row + '" class="form-control" />
+	  					<input id="print_dot_app_web2print_option_values" type="hidden" name="product_option[${option_row][value]" value="" id="input-value${option_row}" class="form-control" />
 					</div>`;
                 }
             ]]></add>
@@ -393,7 +395,7 @@
 				$current_upload_opt = "0";
 				if ($wquery->num_rows) {
 					$current_option = $wquery->row['value'];
-					$temp_array = explode(":", $current_option);
+					$temp_array = explode("__", $current_option);
 					if (count($temp_array) > 1) {
 						$current_design_id = $temp_array[0];
 						$current_upload_opt = $temp_array[1];
@@ -416,7 +418,7 @@
 				$current_upload_opt = "0";
 				if ($wquery->num_rows) {
 					$current_option = $wquery->row['value'];
-					$temp_array = explode(":", $current_option);
+					$temp_array = explode("__", $current_option);
 					if (count($temp_array) > 1) {
 						$current_design_id = $temp_array[0];
 						$current_upload_opt = $temp_array[1];
@@ -865,6 +867,8 @@
 						{% if print_dot_app.project_id %}
 							 mode: 'edit-project',
 							 projectId: '{{ print_dot_app.project_id }}',
+						{% else %}
+							mode: 'new-project',
 						{% endif %}
 						previewsSelector: 'ul.thumbnails',
 						commandSelector: '#pa-buttons',
