@@ -191,7 +191,7 @@
 								</span>
 							</div>
 	  					</div>
-	  					<input id="print_dot_app_web2print_option_values" type="hidden" name="product_option[${option_row][value]" value="" id="input-value${option_row}" class="form-control" />
+	  					<input id="print_dot_app_web2print_option_values" type="hidden" name="product_option[${option_row}][value]" value="" id="input-value${option_row}" class="form-control" />
 					</div>`;
                 }
             ]]></add>
