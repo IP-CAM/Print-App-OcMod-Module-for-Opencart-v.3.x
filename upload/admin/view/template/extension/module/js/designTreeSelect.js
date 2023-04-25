@@ -125,6 +125,9 @@
             .print_dot_app_indent_list {
                 margin-left: 20px
             }
+            .print_dot_app_design_list .item span {
+                pointer-events: none;
+            }
         </style>`;
         document.head.insertAdjacentHTML('beforeEnd', style);
     
@@ -163,22 +166,7 @@
     
         main.style.display='none';
         
-        // SET RADIO BUTTONS UPON DIV AND LABEL CLICK
-        function listenLabelAndDivClick() {
-            document.querySelectorAll(".print_app_design_list .item").forEach(_=>{
-                _.addEventListener('click',function(e) {
-                    if (e.target.children && e.target.children[0] && e.target.children[0].type === 'radio')
-                        e.target.children[0].checked = true;
-                });
-            });
-            document.querySelectorAll(".print_app_design_list .item span").forEach(_=>{
-                _.addEventListener('click',function(e) {
-                    if (e.target.parentElement.children[0].type === 'radio')
-                        e.target.parentElement.children[0].checked = true;
-                });
-            });
-        }
-        
+
         let cDesignVals;
         if (window.print_dot_app_current_design) {
             cDesignVals = window.print_dot_app_current_design.split('__')[1];
@@ -192,7 +180,7 @@
         const newMain = main.previousElementSibling;
         
         main.insertAdjacentElement('beforebegin',sel);
-        listenLabelAndDivClick();
+        
         
         let performClickAway = false;
         // WHEN DROPDOWN IS CLICKED, SHOW THE LIST
@@ -224,6 +212,18 @@
         
         // ONLY WHEN CLICK ON DROPDOWN DON'T HIDE ANYTHING
         document.querySelector('div.print_dot_app_design_list').addEventListener('click', e => e.stopPropagation());
+        
+        // SET RADIO BUTTONS UPON DIV AND LABEL CLICK
+        function listenLabelAndDivClick() {
+            document.querySelectorAll(".print_dot_app_design_list .item").forEach(_=>{
+                _.addEventListener('click',function(e) {
+                    if (e.target.children && e.target.children[0] && e.target.children[0].type === 'radio')
+                        e.target.children[0].checked = true;
+                });
+            });
+        }
+        
+        listenLabelAndDivClick();
         
         // ADD EVENT LISTENERS TO ROOT ITEMS
         const chevStatus = {};
