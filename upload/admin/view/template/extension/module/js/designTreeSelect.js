@@ -27,7 +27,7 @@
                             rej(req.responseText);
                     }
                 };
-                req.open('post', `/admin/index.php?route=extension/printapp_designs/load&user_token=${window.printappocin}`);
+                req.open('post', `${window.printappOrignServer}index.php?route=extension/printapp_designs/load&user_token=${window.printappocin}`);
                 req.send(data);
             });
         };
@@ -132,6 +132,10 @@
         
         let input = await pdaLoadItems();
     
+        if (input.error) {
+            main.parentElement.innerHTML = input.msg;
+            return;
+        }
         const sel = document.createElement('div');
         sel.classList.add("print_dot_app_design_list");
     
@@ -158,15 +162,37 @@
         sel.style.display = 'none';
     
         main.style.display='none';
-        const cDesignVals = window.print_dot_app_current_design.split('__');
+        
+        // SET RADIO BUTTONS UPON DIV AND LABEL CLICK
+        function listenLabelAndDivClick() {
+            document.querySelectorAll(".print_app_design_list .item").forEach(_=>{
+                _.addEventListener('click',function(e) {
+                    if (e.target.children && e.target.children[0] && e.target.children[0].type === 'radio')
+                        e.target.children[0].checked = true;
+                });
+            });
+            document.querySelectorAll(".print_app_design_list .item span").forEach(_=>{
+                _.addEventListener('click',function(e) {
+                    if (e.target.parentElement.children[0].type === 'radio')
+                        e.target.parentElement.children[0].checked = true;
+                });
+            });
+        }
+        
+        let cDesignVals;
+        if (window.print_dot_app_current_design) {
+            cDesignVals = window.print_dot_app_current_design.split('__')[1];
+        }
         main.insertAdjacentHTML('beforebegin', `<div class="print_dot_app_select">
-            <span>${cDesignVals[1] || 'None'}</span>
+            <span>${cDesignVals || 'None'}</span>
             <span class="chevron bottom"></span>
         </div>`);
+        
         
         const newMain = main.previousElementSibling;
         
         main.insertAdjacentElement('beforebegin',sel);
+        listenLabelAndDivClick();
         
         let performClickAway = false;
         // WHEN DROPDOWN IS CLICKED, SHOW THE LIST
@@ -242,6 +268,7 @@
                     });
                     list += '</div>';
                     target.parentElement.parentElement.insertAdjacentHTML('beforeend',list);
+                    listenLabelAndDivClick();
                     
                     chevStatus[target.dataset.id] = {};
                     chevStatus[target.dataset.id].list = target.parentElement.parentElement.lastChild;
