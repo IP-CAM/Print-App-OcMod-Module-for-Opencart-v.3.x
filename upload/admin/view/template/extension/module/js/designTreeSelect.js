@@ -128,6 +128,10 @@
             .print_dot_app_design_list .item span:not(.chevron) {
                 pointer-events: none;
             }
+            print_dot_app_design_list > div {
+                max-height: 400px;
+                overflow-y: scroll;
+            }
         </style>`;
         document.head.insertAdjacentHTML('beforeEnd', style);
     
