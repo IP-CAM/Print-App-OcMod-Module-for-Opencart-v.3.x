@@ -125,7 +125,7 @@
             .print_dot_app_indent_list {
                 margin-left: 20px
             }
-            .print_dot_app_design_list .item span {
+            .print_dot_app_design_list .item span:not(.chevron) {
                 pointer-events: none;
             }
         </style>`;
