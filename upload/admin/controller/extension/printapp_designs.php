@@ -5,7 +5,7 @@ define('PRINT_DOT_APP_RUNTIME_API_URL', 'https://yhlk1004od.execute-api.eu-west-
 class ControllerExtensionPrintappDesigns extends Controller {
 
     public function load() {
-        $path = isset($this->request->get['path']) ? $this->request->get['path'] : false;
+        $path = isset($this->request->post['path']) ? $this->request->post['path'] : false;
         $authKey = $this->config->get('print_dot_app_secret_value');
 		$url = PRINT_DOT_APP_RUNTIME_API_URL.'/designs'.($path ? '/'.$path : '');
 
