@@ -9,28 +9,10 @@
         <operation>
 			<search><![CDATA[$this->response->setOutput]]></search>
 			<add position="before"><![CDATA[ 
-			
-                $this->load->model('setting/setting');
-				
-                $data['current_design_id'] = -1;
-                $data['current_upload_opt'] = 0;
-                $data['current_display_opt'] = '';
-				$data['customizationRequired'] = 0;
-                
-                if (isset($this->request->get['product_id'])) {
-                    $this->load->model('extension/module/print_dot_app');
-                    $pitch_val = $this->model_extension_module_print_dot_app->getPrintDotAppWeb2Print($this->request->get['product_id']);
-                    
-                    $data['print_dot_app_current_design'] = $pitch_val;
-                    
-                    $pitch_val = explode("__", $pitch_val);
-                    if (count($pitch_val) > 1) {
-                        $data['current_design_id'] = $pitch_val[0];
-                        $data['current_display_opt'] = (isset($pitch_val[3]) ? $pitch_val[3] : '');
-                    }
-                }
-                $data['print_dot_app_design_tree_js'] = HTTPS_SERVER . 	'view/template/extension/module/js/designTreeSelect.js';
-				$data['print_dot_app_client_server'] = HTTPS_SERVER;
+			if (isset($this->request->get['product_id'])) {
+            	$data['current_product_id'] = $this->request->get['product_id'];
+            	$data['print_dot_app_api_value'] =  $this->config->get('print_dot_app_api_value');
+            }
 			]]></add>
 		</operation>
 	</file>
@@ -53,71 +35,58 @@
 			<search ><![CDATA[{% if product_option.type == 'select' or]]></search>
 			<add position="before"><![CDATA[
 				{% if product_option.type == 'print_dot_app_web2print' %}
-					<script>console.log('cino look here');console.log("{{product_option|json_encode()|escape('js')}}")</script>
-					<input id="print_dot_app_web2print_option_values" type="hidden" name="product_option[{{ option_row }}][value]" value="{{ product_option.value }}" />
-					<div id="print_dot_app_web2print_init_option">
-						<div class="form-group">
-							<label class="col-sm-2 control-label" for="display_mode">Display Mode</label>
-							<div class="col-sm-10">
-								<select id="pda_pick_display_mode" name="pda_pick_display_mode" class="form-control">
-									<option value="">None</option>
-									<option value="modal">Full Window</option>
-									<option value="inline">Inline</option>
-									<option value="mini">Mini</option>
-								</select>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label" for="currentDesign">Choose Design Template</label>
-							<div class="col-sm-10">
-								<select onchange="PPADMIN.changeOpts()" name="print_dot_app_design_select" id="ppa_pick" class="form-control">
-									<option value="-1">None</option>
-								</select>
-							</div>
-						</div>
-						<div class="form-group"><label class="col-sm-2 control-label" for="users_can_upload"></label>
-							<div class="col-sm-10">
-								<span style="font-size:10px; color:#000; padding-top:10px; padding-left:20px;">
-									<a href="https://admin.print.app/designs" target="_blank"><i>Create New Design</i></a>
-								</span>
-							</div>
-	  					</div>
-	  					<script>
-	  					  (function(){
-								
-								var ppOptions = jQuery("#print_dot_app_web2print_option_values");
-		          				var displayMode = jQuery('[name="pda_pick_display_mode"]');
-		          				displayMode.val(ppOptions.val().split('__')[2]);
-		          				displayMode[displayMode.length > 1 ? 1 : 0].addEventListener('print_dot_app_web2print_options_changed', _updatePdaDisplayMode);
-		          				displayMode.change(_updatePdaDisplayMode);
-		          				function _updatePdaDisplayMode () {
-		          					var a = ppOptions.val().split('__');
-		          					if (a.length == 0) for (let i = 0; i++; i < 3) a.push(''); 
-		          					a[2] = displayMode[displayMode.length > 1 ? 1 : 0].value;
-		          					ppOptions.val(a.join('__'));	
-		          				}
-							  /* var currentDesign = jQuery('[name="print_dot_app_design_select"]');
-							  currentDesign[displayMode.length > 1 ? 1 : 0].addEventListener('print_dot_app_web2print_options_changed', _updatePdaCurrentDesign);
-							  currentDesign.change(_updatePdaCurrentDesign);
-							  function _updatePdaCurrentDesign () {
-							  	var ppOptions = jQuery("#print_dot_app_web2print_option_values");
-							  	var a = ppOptions.val().split('__');
-							  	if (a.length == 0) for (let i = 0; i++; i < 2) a.push(''); 
-							  	a[0] = currentDesign.val();
-							  	ppOptions.val(a.join('__'));	
-							  } */
-		          			})();
-          					
-          					window.print_dot_app_current_design = '{{ print_dot_app_current_design }}';
-	  						window.printappOrignServer = '{{ print_dot_app_client_server }}';
-			    			window.printappocin = '{{ user_token }}';
-							(function(){
-								const script = document.createElement('script');
-								script.src = '{{ print_dot_app_design_tree_js }}';
-								document.head.appendChild(script);
-							})();
-	  					</script>
-					</div>
+					<style>
+					      #print_app_tab a.button {
+			            	  border: 2px solid rgb(30, 145, 207);
+			            	  border-radius: 5px;
+			            	  padding: 5px;
+		            	}
+		          </style>
+		          
+	              <div class="form-group">
+	                <div id="print_app_tab" style="padding:1rem" class="col-xs-offset-1"></div>
+	              </div>
+	              
+	  				<script>
+	  				  /* global pa_admin_values api_key and product_id */
+		          
+		                (async function() {
+		                    // if (typeof pax_admin_values === 'undefined') return;
+		                    
+		                    const padLoadData = () => {
+		                        return new Promise( async (resolve, reject) => {
+		                            const   request   = new XMLHttpRequest();
+		                            
+		                            request.onreadystatechange = function() {
+		                                if (request.readyState == 4) {
+		                                    if (request.status == 200) 
+		                                        resolve(JSON.parse(request.responseText));
+		                                    else
+		                                        reject(request.responseText);
+		                                }
+		                            };
+		                            request.open('GET', 'https://run.print.app/'+ '{{ print_dot_app_api_value }}'+'/'+{{ current_product_id }}+'/oc/admin');
+		                            request.send();
+		                        });
+		                    },
+		                    element = document.getElementById('print_app_tab'),
+		                    setLoading = () => {
+		                        element.innerHTML = `<div class="print-app-loading" style="width:4rem;height:4rem;background-repeat:no-repeat;background-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MHB4IiBoZWlnaHQ9IjUwcHgiIHZpZXdCb3g9IjAgMCA1MCA1MCIgPg0KPGNpcmNsZSBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjEiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSI1IiBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiLz4NCjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1LDI1KSByb3RhdGUoLTkwKSI+DQogICAgIDxjaXJjbGUgIHN0eWxlPSJzdHJva2U6IzQ4QjBGNzsgZmlsbDpub25lOyBzdHJva2Utd2lkdGg6IDVweDsgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kIiBzdHJva2UtZGFzaGFycmF5PSIxMTAiIHN0cm9rZS1kYXNob2Zmc2V0PSIwIiAgY3g9IjAiIGN5PSIwIiByPSIyMCI+DQogICAgICAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJzdHJva2UtZGFzaG9mZnNldCIgdmFsdWVzPSIzNjA7MTQwIiBkdXI9IjIuMnMiIGtleVRpbWVzPSIwOzEiIGNhbGNNb2RlPSJzcGxpbmUiIGZpbGw9ImZyZWV6ZSIga2V5U3BsaW5lcz0iMC40MSwwLjMxNCwwLjgsMC41NCIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGJlZ2luPSIwIi8+DQogICAgICAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgdmFsdWVzPSIwOzI3NDszNjAiIGtleVRpbWVzPSIwOzAuNzQ7MSIgY2FsY01vZGU9ImxpbmVhciIgZHVyPSIyLjJzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgYmVnaW49IjAiLz4NCiAgICAgICAgIDxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InN0cm9rZSIgdmFsdWVzPSIjZWY0NDQ0OyNmYWNjMTU7I2EzZTYzNTsjNDhCMEY3OyM2RDVDQUU7IzEwQ0ZCRDsjZmFjYzE1OyNlZjQ0NDQiIGZpbGw9ImZyZWV6ZSIgZHVyPSI4cyIgYmVnaW49IjAiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+DQogICAgIDwvY2lyY2xlPg0KPC9nPg0KPC9zdmc+')"></div>`;
+		                    };
+		                
+		                    if (!element) return;
+		                    setLoading();
+		                    const designContent = await padLoadData();
+		                    if (!designContent || !designContent.html) return element.innerHTML = '<div class="print-app-error">Error loading design</div>';
+		                    
+		                    let productTitle = encodeURIComponent(document.querySelector('#input-name1').value || '');
+		                    designContent.html = designContent.html.replace(/(href=")(.+?)(")/, `$1$2${productTitle}$3`);
+		                    
+		                    element.innerHTML = designContent.html;
+		                
+		                })();
+	  				</script>
+					
 				{% endif %}
 			]]></add>
 		</operation>
@@ -125,38 +94,44 @@
 			<search><![CDATA[$('#tab-option .tab-content').append(html);]]></search>
 			<add position="after"><![CDATA[ 
 				if (item['type'] == 'print_dot_app_web2print') {
-					(function(){
-						var displayMode = jQuery('[name="pda_pick_display_mode"]');
-						displayMode.val('{{current_display_opt}}');
-						displayMode[displayMode.length > 1 ? 1 : 0].addEventListener('print_dot_app_web2print_options_changed', _updatePdaDisplayMode);
-						displayMode.change(_updatePdaDisplayMode);
-						function _updatePdaDisplayMode () {
-							var ppOptions = jQuery("#print_dot_app_web2print_option_values");
-							var a = ppOptions.val().split('__');
-							if (a.length == 0) for (let i = 0; i++; i < 3) a.push(''); 
-							a[2] = displayMode[displayMode.length > 1 ? 1 : 0].value;
-							ppOptions.val(a.join('__'));	
-						}
-						
-						/* var currentDesign = jQuery('[name="print_dot_app_design_select"]');
-						currentDesign[displayMode.length > 1 ? 1 : 0].addEventListener('print_dot_app_web2print_options_changed', _updatePdaCurrentDesign);
-						currentDesign.change(_updatePdaCurrentDesign);
-						function _updatePdaCurrentDesign () {
-							var ppOptions = jQuery("#print_dot_app_web2print_option_values");
-							var a = ppOptions.val().split('__');
-							if (a.length == 0) for (let i = 0; i++; i < 2) a.push(''); 
-							a[0] = currentDesign.val();
-							ppOptions.val(a.join('__'));	
-						} */
-					})();
-					window.print_dot_app_current_design = '{{ print_dot_app_current_design }}';
-					window.printappOrignServer = '{{ print_dot_app_client_server }}';
-	    			window.printappocin = '{{ user_token }}';
-					(function(){
-						const script = document.createElement('script');
-						script.src = '{{ print_dot_app_design_tree_js }}';
-						document.head.appendChild(script);
-					})();
+					/* global pa_admin_values api_key and product_id */
+          
+			          (async function() {
+			              // if (typeof pax_admin_values === 'undefined') return;
+			              
+			              const padLoadData = () => {
+			                  return new Promise( async (resolve, reject) => {
+			                      const   request   = new XMLHttpRequest();
+			                      
+			                      request.onreadystatechange = function() {
+			                          if (request.readyState == 4) {
+			                              if (request.status == 200) 
+			                                  resolve(JSON.parse(request.responseText));
+			                              else
+			                                  reject(request.responseText);
+			                          }
+			                      };
+			                      request.open('GET', 'https://run.print.app/'+ '{{ print_dot_app_api_value }}'+'/'+{{ current_product_id }}+'/oc/admin');
+			                      request.send();
+			                  });
+			              },
+			              element = document.getElementById('print_app_tab'),
+			              setLoading = () => {
+			                  element.innerHTML = `<div class="print-app-loading" style="width:4rem;height:4rem;background-repeat:no-repeat;background-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MHB4IiBoZWlnaHQ9IjUwcHgiIHZpZXdCb3g9IjAgMCA1MCA1MCIgPg0KPGNpcmNsZSBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjEiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSI1IiBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiLz4NCjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1LDI1KSByb3RhdGUoLTkwKSI+DQogICAgIDxjaXJjbGUgIHN0eWxlPSJzdHJva2U6IzQ4QjBGNzsgZmlsbDpub25lOyBzdHJva2Utd2lkdGg6IDVweDsgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kIiBzdHJva2UtZGFzaGFycmF5PSIxMTAiIHN0cm9rZS1kYXNob2Zmc2V0PSIwIiAgY3g9IjAiIGN5PSIwIiByPSIyMCI+DQogICAgICAgICA8YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJzdHJva2UtZGFzaG9mZnNldCIgdmFsdWVzPSIzNjA7MTQwIiBkdXI9IjIuMnMiIGtleVRpbWVzPSIwOzEiIGNhbGNNb2RlPSJzcGxpbmUiIGZpbGw9ImZyZWV6ZSIga2V5U3BsaW5lcz0iMC40MSwwLjMxNCwwLjgsMC41NCIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIGJlZ2luPSIwIi8+DQogICAgICAgICA8YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIHR5cGU9InJvdGF0ZSIgdmFsdWVzPSIwOzI3NDszNjAiIGtleVRpbWVzPSIwOzAuNzQ7MSIgY2FsY01vZGU9ImxpbmVhciIgZHVyPSIyLjJzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIgYmVnaW49IjAiLz4NCiAgICAgICAgIDxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InN0cm9rZSIgdmFsdWVzPSIjZWY0NDQ0OyNmYWNjMTU7I2EzZTYzNTsjNDhCMEY3OyM2RDVDQUU7IzEwQ0ZCRDsjZmFjYzE1OyNlZjQ0NDQiIGZpbGw9ImZyZWV6ZSIgZHVyPSI4cyIgYmVnaW49IjAiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+DQogICAgIDwvY2lyY2xlPg0KPC9nPg0KPC9zdmc+')"></div>`;
+			              };
+			          
+			              if (!element) return;
+			              setLoading();
+			              const designContent = await padLoadData();
+			              if (!designContent || !designContent.html) return element.innerHTML = '<div class="print-app-error">Error loading design</div>';
+			              
+			              let productTitle = encodeURIComponent(document.querySelector('#input-name1').value || '');
+			              designContent.html = designContent.html.replace(/(href=")(.+?)(")/, `$1$2${productTitle}$3`);
+			              
+			              element.innerHTML = designContent.html;
+			          
+			          })();
+
 				}
 			]]></add>
 		</operation>
@@ -164,35 +139,16 @@
             <search><![CDATA[if (item['type'] == 'text') {]]></search>
             <add position="before"><![CDATA[ 
                 if (item['type'] == 'print_dot_app_web2print' && typeof product_option == "undefined") {
-                	html += `<div id="print_dot_app_web2print_option_form">
-						<div class="form-group">
-							<label class="col-sm-2 control-label" for="display_mode">Display Mode</label>
-							<div class="col-sm-10">
-								<select id="pda_pick_display_mode" name="pda_pick_display_mode" class="form-control">
-									<option value="">None</option>
-									<option value="modal">Full Window</option>
-									<option value="inline">Inline</option>
-									<option value="mini">Mini</option>
-								</select>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label" for="currentDesign">Choose Design Template</label>
-							<div class="col-sm-10">
-								<select onchange="PPADMIN.changeOpts()" name="print_dot_app_design_select" id="ppa_pick" class="form-control">
-									<option value="-1">None</option>
-								</select>
-							</div>
-						</div>
-						<div class="form-group"><label class="col-sm-2 control-label" ></label>
-							<div class="col-sm-10">
-								<span style="font-size:10px; color:#000; padding-top:10px; padding-left:20px;">
-									<a href="https://admin.print.app/designs" target="_blank"><i>Create New Design</i></a>
-								</span>
-							</div>
-	  					</div>
-	  					<input id="print_dot_app_web2print_option_values" type="hidden" name="product_option[${option_row}][value]" value="" id="input-value${option_row}" class="form-control" />
-					</div>`;
+                	html += `<style>
+			                	#print_app_tab a.button {
+				                	 border: 2px solid rgb(30, 145, 207);
+				                	 border-radius: 5px;
+				                	 padding: 5px;
+			                	 }
+		                	 </style>
+		                	 <div class="form-group">
+		                	    <div id="print_app_tab" style="padding:1rem" class="col-xs-offset-1"></div>
+		                	 </div>`;
                 }
             ]]></add>
 		</operation>
@@ -858,10 +814,8 @@
 		<operation error="log">
 			<search><![CDATA[</body>]]></search>
 			<add position="before"><![CDATA[
-				<!-- Loading Print.App Javascripts and Styles -->
-				<script src="https://editor.print.app/js/client.js" type="text/javascript"></script>
 				<script>
-					window.print_dot_app_data = {
+					window.printAppParams = {
 						domainKey: '{{ print_dot_app.domainKey }}',		
 						designId: '{{ print_dot_app.design_id }}',
 						{% if print_dot_app.project_id %}
@@ -878,7 +832,8 @@
 						paOptionId: '{{ print_dot_app.product_option_id }}'
 					};
 				</script>
-				<script src="/catalog/view/theme/default/template/extension/module/printapp_client.js"></script>
+				<!-- Loading Print.App Javascripts and Styles -->
+    			<script src="https://run.print.app/{{ print_dot_app.domainKey }}/{{ print_dot_app.product_id }}/oc"></script>
 			]]></add>
 		</operation>
 	</file>
