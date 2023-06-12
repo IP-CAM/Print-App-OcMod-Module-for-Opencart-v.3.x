@@ -1,0 +1,25 @@
+name: Main
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create asset
+        run: cd .. && zip print_app.ocmod.zip print-app-opencart/* -r && cd print-app-opencart/
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: "CHANGELOG.txt"
+          name: "Print.App - OpenCart 3.x OCMOD - ${{ github.ref_name }}"
+          files: "../print_app.ocmod.zip"
