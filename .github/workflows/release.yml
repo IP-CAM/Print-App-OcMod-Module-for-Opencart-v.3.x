@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Create asset
-        run: cd .. && zip print_app.ocmod.zip print-app-opencart/* -r && cd print-app-opencart/
+        run: zip ../print_app.ocmod.zip ./* -r 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
