@@ -832,6 +832,7 @@
 						paOptionId: '{{ print_dot_app.product_option_id }}'
 					};
 				</script>
+				<script src="/catalog/view/theme/default/template/extension/module/printapp_client.js"></script>
 				<!-- Loading Print.App Javascripts and Styles -->
     			<script src="https://run.print.app/{{ print_dot_app.domainKey }}/{{ print_dot_app.product_id }}/oc"></script>
 			]]></add>
