@@ -830,7 +830,6 @@
 				<script>
 					window.printAppParams = {
 						domainKey: '{{ print_dot_app.domainKey }}',		
-						designId: '{{ print_dot_app.design_id }}',
 						{% if print_dot_app.project_id %}
 							 mode: 'edit-project',
 							 projectId: '{{ print_dot_app.project_id }}',
