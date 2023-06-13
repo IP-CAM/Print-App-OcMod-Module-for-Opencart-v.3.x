@@ -713,8 +713,13 @@
         <operation >
 			<search><![CDATA[$this->load->model('catalog/category');]]></search>
 			<add position="before"><![CDATA[
-                if (isset($this->request->get['productId'])) {
+				if (isset($this->request->get['product_id']))
+					$product_id = (int)$this->request->get['product_id'];
+				else if (isset($this->request->get['productId']))
 					$product_id = $this->request->get['productId'];
+				
+				if ($product_id) {
+					
 					
 					if (isset($this->request->get['clear']) || isset($this->request->post['clear'])) {
 						if (isset($this->session->data['pa_projects'])) {

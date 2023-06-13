@@ -32,10 +32,10 @@ if (typeof window.print_dot_app_data !== 'undefined') {
         }
         
         async papresta_resetProject(e) {
-            // e.preventDefault();
-            // const data = { 'product_id': this.params.product.id, action: 'print_dot_app_reset_project' };
-            // await this.comm.post(wp_ajax_url, data);
-            // window.location.reload()
+            e.preventDefault();
+            const data = { productId: this.params.product.id, clear : true };
+            await this.comm.post(this.params.product.url, data);
+            window.location.reload()
             
         }
          
