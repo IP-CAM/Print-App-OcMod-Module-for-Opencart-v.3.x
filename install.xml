@@ -737,7 +737,8 @@
 						$this->session->data['pa_projects'][$product_id] = array();
 					}
 					
-					$this->session->data['pa_projects'][$product_id] = $_POST['pa_values'];
+					if (isset($_POST['pa_values']))
+						$this->session->data['pa_projects'][$product_id] = $_POST['pa_values'];
 					
 					if (isset($this->request->post['clone'])) {
 						echo $this->url->link('product/product', 'product_id=' . $product_id);
@@ -803,6 +804,9 @@
 			<add position="before"><![CDATA[
 				$GLOBALS['print_dot_app']['domainKey'] = $this->config->get('print_dot_app_api_value');
 				$data['print_dot_app'] = $GLOBALS['print_dot_app'];
+				$data['print_dot_app']['product_id'] = isset($this->request->get['product_id']) ? $this->request->get['product_id'] : 0;
+				if (!$data['print_dot_app']['product_id'])
+					$data['print_dot_app']['product_id'] = isset($this->request->get['productId']) ? $this->request->get['productId'] : 0;
 			]]></add>
 		</operation>
 	</file>
