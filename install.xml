@@ -698,12 +698,16 @@
 							
 							if (!isset($GLOBALS['print_dot_app']['pa_projects'])) $GLOBALS['print_dot_app']['pa_projects'] = array();
 							if (isset($GLOBALS['print_dot_app']['pa_projects'][$product_id])) {
-								$opt_ = json_decode(rawurldecode($GLOBALS['print_dot_app']['pa_projects'][$product_id]), true);
-								
-									$GLOBALS['print_dot_app']['mode'] = 'edit';
-									$GLOBALS['print_dot_app']['project_id'] = $opt_['projectId'];
-								
-								$GLOBALS['print_dot_app']['now_value'] = addslashes($GLOBALS['print_dot_app']['pa_projects'][$product_id]);
+								$paData = $GLOBALS['print_dot_app']['pa_projects'][$product_id];
+								if (!empty($paData)) {
+									
+									$opt_ = json_decode(rawurldecode($GLOBALS['print_dot_app']['pa_projects'][$product_id]), true);
+									
+										$GLOBALS['print_dot_app']['mode'] = 'edit';
+										$GLOBALS['print_dot_app']['project_id'] = $opt_['projectId'];
+									
+									$GLOBALS['print_dot_app']['now_value'] = addslashes($GLOBALS['print_dot_app']['pa_projects'][$product_id]);
+								}
 							}
 						}
 					}
