@@ -742,8 +742,8 @@
 					
 					if (isset($this->request->post['clone'])) {
 						echo $this->url->link('product/product', 'product_id=' . $product_id);
+						exit();
 					}
-					exit();
 				}
 			]]></add>
 		</operation>
