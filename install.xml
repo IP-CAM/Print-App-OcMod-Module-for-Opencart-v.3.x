@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
 	<name>PrintApp</name>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <code>print_dot_app_web2print</code>
-    <author>Print.App Ltd</author>
+    <author>Print.App</author>
     <link>https://print.app</link>
+
     <file path="admin/controller/catalog/product.php">
         <operation>
 			<search><![CDATA[$this->response->setOutput]]></search>
@@ -16,6 +17,7 @@
 			]]></add>
 		</operation>
 	</file>
+
 	<file path="admin/view/template/catalog/option_form.twig">
 		<operation>
 				<search><![CDATA[<option value="datetime">{{ text_datetime }}</option>]]></search>
@@ -77,7 +79,7 @@
 		                    if (!element) return;
 		                    setLoading();
 		                    const designContent = await padLoadData();
-		                    if (!designContent || !designContent.html) return element.innerHTML = '<div class="print-app-error">Error loading design</div>';
+		                    if (!designContent?.html) return element.innerHTML = '<div class="print-app-error">Error loading design</div>';
 		                    
 		                    let productTitle = encodeURIComponent(document.querySelector('#input-name1').value || '');
 		                    designContent.html = designContent.html.replace(/(href=")(.+?)(")/, `$1$2${productTitle}$3`);
@@ -123,7 +125,7 @@
 			              if (!element) return;
 			              setLoading();
 			              const designContent = await padLoadData();
-			              if (!designContent || !designContent.html) return element.innerHTML = '<div class="print-app-error">Error loading design</div>';
+			              if (!designContent?.html) return element.innerHTML = '<div class="print-app-error">Error loading design</div>';
 			              
 			              let productTitle = encodeURIComponent(document.querySelector('#input-name1').value || '');
 			              designContent.html = designContent.html.replace(/(href=")(.+?)(")/, `$1$2${productTitle}$3`);
@@ -166,7 +168,7 @@
 						    window.pda_project_previews["'.$pda_data['projectId'].'"] = [];';
 						    
 						foreach($pda_data['previews'] as $prevKey => $prev) {
-							$pdaHTML .= 'window.pda_project_previews["'.$pda_data["projectId"].'"].push(`<img style="display:none" src="'.$prev['url'].'&rand='.rand(100,100000).'" />`);';
+							$pdaHTML .= 'window.pda_project_previews["'.$pda_data["projectId"].'"].push(`<img style="display:none" src="'.$prev['url'].'" />`);';
 						}
 						
 						$pdaHTML .= '</script>';
@@ -174,7 +176,7 @@
 						$pdaHTML .= '
 						<div style="display: flex">
 							<div onclick="pda_show_preview(this)" data-project-id="'.$pda_data["projectId"].'" class="pda_show_preview">
-								<img src="'.$pda_data['previews'][0]['url'].'&rand='.rand(100,100000).'" width="180px"/>
+								<img src="'.$pda_data['previews'][0]['url'].'" width="180px"/>
 								<div>
 									<svg xmlns="http://www.w3.org/2000/svg" class="icon-tabler icon-tabler-search" width="22px" height="22px" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" data-v-09078359="">   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>   <circle cx="10" cy="10" r="7"></circle>   <line x1="21" y1="21" x2="15" y2="15"></line> </svg>
 								</div>
@@ -185,7 +187,7 @@
 								<a href="https://pdf.print.app/'.$pda_data['projectId'].'">Download PDF</a><br/>
 								<a href="https://png.print.app/'.$pda_data['projectId'].'">Download PNG</a><br/>
 								<a href="https://jpg.print.app/'.$pda_data['projectId'].'">Download JPEG</a><br/>
-								<a href="https://admin.print.app/projects#'. $pda_data['projectId'].'">Modify Project</a>
+								<a href="https://admin.print.app/projects/'. $pda_data['projectId'].'">Modify Project</a>
 							</div>
 						</div>';
 						
@@ -196,6 +198,7 @@
 			]]></add>
 		</operation>
 	</file>
+
 	<file path="admin/view/template/sale/order_info.twig">
 		<operation info="Javascripts needed for print_dot_app_web2print execution">
 			<search><![CDATA[<div id="content">]]></search>
@@ -296,17 +299,17 @@
 					let pdaCurrentImagePreviewIndex = 1, pdaCurrentImagePreviewLen;
 					
 					function pda_show_preview(e) {
-			      pdaPopulateGallery(e.dataset.projectId);
-			      showFirstImage();
-			      pdaCurrentImagePreviewLen = window.pda_project_previews[e.dataset.projectId].length;
+			      		pdaPopulateGallery(e.dataset.projectId);
+			      		showFirstImage();
+			      		pdaCurrentImagePreviewLen = window.pda_project_previews[e.dataset.projectId].length;
 						document.querySelector("#pda_preview").style.display = "grid";
 						document.body.style.overflow = "hidden";
 					}
 					function pdaPopulateGallery(projectId) {
-					  document.querySelector('#pda_preview_gallery').innerHTML = window.pda_project_previews[projectId].join('');
+					  	document.querySelector('#pda_preview_gallery').innerHTML = window.pda_project_previews[projectId].join('');
 					}
 					function showFirstImage() {
-					  document.querySelector('#pda_preview_gallery img:first-child').style.display = 'block';
+					  	document.querySelector('#pda_preview_gallery img:first-child').style.display = 'block';
 					}
 					function pda_close_preview() {
 						document.querySelector("#pda_preview").style.display="none";
@@ -314,13 +317,13 @@
 						pdaCurrentImagePreviewIndex = 1;
 					}
 					function pda_previous() {
-					  if (pdaCurrentImagePreviewIndex == 1) return;
+					  	if (pdaCurrentImagePreviewIndex == 1) return;
 						document.querySelectorAll('#pda_preview_gallery img').forEach(img=>img.style.display = 'none');
 						pdaCurrentImagePreviewIndex--;
 						document.querySelector(`#pda_preview_gallery img:nth-child(${pdaCurrentImagePreviewIndex})`).style.display = 'block';
 					}
 					function pda_next() {
-					  if (pdaCurrentImagePreviewIndex == pdaCurrentImagePreviewLen) return;
+					  	if (pdaCurrentImagePreviewIndex == pdaCurrentImagePreviewLen) return;
 						document.querySelectorAll('#pda_preview_gallery img').forEach(img=>img.style.display = 'none')
 						pdaCurrentImagePreviewIndex++;
 						document.querySelector(`#pda_preview_gallery img:nth-child(${pdaCurrentImagePreviewIndex})`).style.display = 'block';
@@ -398,7 +401,7 @@
 			foreach($option_data as $opt_key => $opt ) {
 				if ($opt['name'] == 'Print.App') {
 					$pda_data = json_decode(urldecode($opt['value']),true);
-					$pdaImage = $pda_data['previews'][0]['url'].'&rand='.rand(100,100000);
+					$pdaImage = $pda_data['previews'][0]['url'];
 					unset($option_data[$opt_key]);
 				}
 			}
@@ -435,6 +438,7 @@
 			]]></add>
 		</operation>
 	</file>
+
     <file error="log" path="catalog/controller/checkout/confirm.php">
     	<operation>
 			<search><![CDATA[(utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value)]]></search>
@@ -446,7 +450,7 @@
 				foreach($option_data as $opt_key => &$opt ) {
 					if ($opt['name'] == 'Print.App') {
 						$pda_data = json_decode(urldecode($opt['value']),true);
-						$opt['value'] = '<img width="180px" src="'.$pda_data['previews'][0]['url'].'&rand='.rand(100,100000).'"/>';
+						$opt['value'] = '<img width="180px" src="'.$pda_data['previews'][0]['url'].'"/>';
 						$opt['name'] = ''; // ToDo: $this->language->get('pa_design');
 					}
 				}
@@ -475,6 +479,7 @@
 			<add position="replace"><![CDATA[$value]]></add>
 		</operation>
 	</file>
+
     <file path="catalog/controller/account/account.php">
 		<operation>
 			<search><![CDATA[$this->load->language('account/account');]]></search>
@@ -507,6 +512,7 @@
 			<add position="replace"><![CDATA['value' => $value]]></add>
 		</operation>
 	</file>
+
 	<file error="log" path="catalog/model/checkout/order.php">
 		<operation>
 			<search error="log"><![CDATA[$this->cache->delete('product');]]></search>
@@ -545,7 +551,6 @@
 						$timestamp = time();
 						$print_dot_app_api_value = $this->config->get('print_dot_app_api_value');
 						$print_dot_app_secret_value = $this->config->get('print_dot_app_secret_value');
-						$signature = md5($print_dot_app_api_value . html_entity_decode($print_dot_app_secret_value) . $timestamp);
 						$body = array (
 							'products' => $items,
 							'client' => 'oc',
@@ -555,13 +560,11 @@
 							'shippingAddress' => $order_info['shipping_company'] . ',\n' . $order_info['shipping_address_1'] . ',\n' . $order_info['shipping_address_2'] . ',\n' . $order_info['shipping_city'] . ',\n' . $order_info['shipping_zone'] . ',\n' . $order_info['shipping_postcode'] . ',\n' . $order_info['shipping_country'],
 							'orderId' => $order_id,
 							'customer' => $order_info['customer_id'],
-							'apiKey' => $print_dot_app_api_value,
-							'signature' => $signature,
-							'timestamp' => $timestamp
+							'apiKey' => $print_dot_app_api_value
 						);
 						$ch = curl_init();
 						curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-						curl_setopt($ch, CURLOPT_URL, "https://api.print_dot_app.io/runtime/order-complete");
+						curl_setopt($ch, CURLOPT_URL, "https://api.print.app/runtime/order-complete");
 						curl_setopt($ch, CURLOPT_POST, true);
 						curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
 						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -582,70 +585,6 @@
 			]]></add>
 		</operation>
 	</file>
-	
-    <file path="catalog/model/catalog/product.php">
-		<operation>
-			<search index="0"><![CDATA[if ($query->num_rows) {]]></search>
-			<add position="before"><![CDATA[
-					if (isset($this->session->data['w2p_projects'][$product_id]['image'])) {
-						$imgs = explode(',', $this->session->data['w2p_projects'][$product_id]['image']);
-						$query->row['image'] = $imgs[0];
-					}
-					
-					$current_design_id = "0";
-					$current_display_opt = "";
-					
-					$w2pqry = $this->db->query("SELECT * FROM `" . DB_PREFIX . "option` WHERE `type` = 'print_dot_app_web2print'");
-					
-					if ($w2pqry->num_rows > 0) {
-						$print_dot_app_web2print_option = $w2pqry->row['option_id'];
-						$wquery = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_option WHERE option_id=" . $print_dot_app_web2print_option . " and product_id=" . $product_id);
-						//====================
-						if ($wquery->num_rows) {
-							$current_option = $wquery->row['value'];
-							$temp_array = explode("__", $current_option);
-							if (count($temp_array) > 1) {
-								$current_design_id = $temp_array[0];
-								$current_display_opt = (isset($temp_array[2]) ? $temp_array[2] : '');
-							}
-							$query->row['design_id'] = $current_design_id;
-							$query->row['ppa_display_mode'] = $current_display_opt;
-						}
-					}
-						
-			]]></add>
-		</operation>
-		<operation>
-			<search><![CDATA[=> $query->row['product_id'],]]></search>
-			<add position="after"><![CDATA[
-						
-					'design_id'     			=> $current_design_id,
-					'ppa_display_mode'			=> $current_display_opt,
-			]]></add>
-		</operation>
-	</file>
-	<file error="log" path="catalog/controller/product/category.php">
-		<operation >
-			<search><![CDATA[public function index() {]]></search>
-			<add position="after"><![CDATA[
-					if (isset($this->request->get['ppaIds'])) {
-						$this->load->model('catalog/product');
-						$ppaIds = json_decode($this->request->get['ppaIds']);
-						$designIds = array();
-						foreach($ppaIds as $ppaId) {
-							$ppaProdInfo = $this->model_catalog_product->getProduct($ppaId);
-								if (isset ($ppaProdInfo['design_id']))
-										$designIds[$ppaId] = $ppaProdInfo['design_id'];
-						}
-						echo json_encode(array(
-							'apiKey' => $this->config->get('print_dot_app_api_value'), 
-							'designs' => $designIds
-						));
-						exit();
-					}
-			]]></add>
-		</operation>
-	</file>
 			
     <file error="log" path="catalog/controller/product/product.php">
 		<operation >
@@ -655,9 +594,6 @@
 					foreach($data['options'] as $option) {
 						if ($option['type'] === 'print_dot_app_web2print') {
 							$GLOBALS['print_dot_app']['pa_projects'] = isset($this->session->data['pa_projects']) ? $this->session->data['pa_projects'] : array();
-							if (!empty($product_info['design_id'])) $GLOBALS['print_dot_app']['product_id'] = $product_info['product_id'];
-							$GLOBALS['print_dot_app']['design_id'] = $data['design_id'] = $product_info['design_id'];
-							$GLOBALS['print_dot_app']['ppa_display_mode'] = $data['ppa_display_mode'] = $product_info['ppa_display_mode'];
 							$GLOBALS['print_dot_app']['product_title'] = addslashes($data['heading_title']);
 							
 							$GLOBALS['print_dot_app']['product_option_id'] = $option['product_option_id'];
@@ -679,13 +615,13 @@
 								if (!empty($pp_addr['zone'])) $GLOBALS['print_dot_app']['customer_address'] .=  addslashes($pp_addr['zone']) . '\n';
 								if (!empty($pp_addr['country'])) $GLOBALS['print_dot_app']['customer_address'] .=  addslashes($pp_addr['country']);
 								
-								$GLOBALS['print_dot_app']['customer_address'] = $GLOBALS['print_dot_app']['customer_address'];
-								
 								$GLOBALS['print_dot_app']['customer_data'] = array(
+									'id' => $this->session->data['customer_id'],
 									'email' => $this->customer->getEmail(),
 									'name' => addslashes($this->customer->getFirstName() . ' ' . $this->customer->getLastName()),
 									'firstname' => addslashes($this->customer->getFirstName()),
 									'lastname' => addslashes($this->customer->getLastName()),
+									'address' => $GLOBALS['print_dot_app']['customer_address'],
 									'telephone' => $this->customer->getTelephone()
 								);
 							}
@@ -723,8 +659,6 @@
 					$product_id = $this->request->get['productId'];
 				
 				if ($product_id) {
-					
-					
 					if (isset($this->request->get['clear']) || isset($this->request->post['clear'])) {
 						if (isset($this->session->data['pa_projects'])) {
 							if (isset($this->session->data['pa_projects'][$product_id])) {
@@ -752,6 +686,7 @@
 			]]></add>
 		</operation>
 	</file>
+
 	<file error="log" path="catalog/view/theme/default/template/product/product.twig">
 		<operation error="log">
 			<search><![CDATA[<button type="button" id="button-cart" data-loading-text="{{ text_loading }}"]]></search>
@@ -760,6 +695,7 @@
 			]]></add>
 		</operation>
 	</file>
+
 	<file error="log" path="catalog/controller/api/order.php">
 		<operation error="log">
 			<search index="2"><![CDATA[foreach ($product['option'] as $option) {]]></search>
@@ -795,13 +731,8 @@
 					$GLOBALS['print_dot_app'] = array();
 				]]></add>
 		</operation>
-		<operation error="log">
-			<search><![CDATA[$data['styles'] = $this->document->getStyles();]]></search>
-			<add position="before"><![CDATA[
-				$this->document->addStyle('catalog/view/theme/default/template/extension/module/printapp_style.css');	
-			]]></add>
-		</operation>
 	</file>
+
 	<file error="log" path="catalog/controller/common/footer.php">
 		<operation error="log">
 			<search><![CDATA[$this->load->model('catalog/information');]]></search>
@@ -814,6 +745,7 @@
 			]]></add>
 		</operation>
 	</file>
+
 	<file error="skip" path="catalog/view/theme/*/template/mail/order.twig">
 		<operation error="skip">
 			<search><![CDATA[&nbsp;<small> - {{ option.name }}: {{ option.value }}</small>{% endfor %}</td>]]></search>
@@ -841,10 +773,11 @@
 						product: {
 							url: 'index.php?route=product/product&product_id='+'{{ print_dot_app.product_id }}'+'&productId='+'{{ print_dot_app.product_id }}'
 						},
-						paOptionId: '{{ print_dot_app.product_option_id }}'
+						paOptionId: '{{ print_dot_app.product_option_id }}',
+						userData: '{{ print_dot_app.customer_data }}',
 					};
 				</script>
-				<!-- Loading Print.App Javascripts and Styles -->
+				<!-- Loading Print.App Javascript -->
     			<script src="https://run.print.app/{{ print_dot_app.domainKey }}/{{ print_dot_app.product_id }}/oc"></script>
 			]]></add>
 		</operation>

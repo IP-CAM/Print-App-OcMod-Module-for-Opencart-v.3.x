@@ -46,12 +46,6 @@ class ControllerExtensionModulePrintDotApp extends Controller {
 		
 		$data['api_label'] = $this->language->get('api_label');
 		$data['secret_label'] = $this->language->get('secret_label');
-		$data['cat_cust_enable_label'] = $this->language->get('cat_cust_enable_label');
-		
-		$data['enabled_label'] = $this->language->get('enabled_label');
-		$data['disabled_label'] = $this->language->get('disabled_label');
-		
-		
 		$data['button_save'] = $this->language-> get('button_save');
 		
 		// API Key
@@ -66,13 +60,6 @@ class ControllerExtensionModulePrintDotApp extends Controller {
 			$data['print_dot_app_secret_value'] = trim($this->request->post['print_dot_app_secret_value']);
 		} else {
 			$data['print_dot_app_secret_value'] = $this->config->get('print_dot_app_secret_value');
-		}
-		
-		// Category Customization
-		if (isset($this->request->post['print_dot_app_cat_cust_enable'])) {
-			$data['print_dot_app_cat_cust_enable'] = trim($this->request->post['print_dot_app_cat_cust_enable']);
-		} else {
-			$data['print_dot_app_cat_cust_enable'] = $this->config->get('print_dot_app_cat_cust_enable');
 		}	
 		
 		$data['heading_title'] = $this->language->get('heading_title');

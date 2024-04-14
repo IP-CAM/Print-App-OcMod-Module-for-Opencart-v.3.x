@@ -25,15 +25,5 @@ class ModelExtensionModulePrintDotApp extends Model {
 		$this->db->query("UPDATE " . DB_PREFIX . "user_group SET permission = '" . $this->db->escape(json_encode($openPerm)) . "' WHERE name = 'Administrator'");
 	}
 	
-	public function getPrintDotAppWeb2Print($pid) {
-		$optid = $this->db->query("SELECT * FROM `" . DB_PREFIX . "option` WHERE `type` = 'print_dot_app_web2print'");
-		if (!isset($optid->row['option_id'])) {
-			$this->install();
-			$optid = $this->db->query("SELECT * FROM `" . DB_PREFIX . "option` WHERE `type` = 'print_dot_app_web2print'");
-		}
-		$optid = $optid->row['option_id'];
-		$opt_qry = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_option WHERE product_id=" . $pid. " and option_id=". $optid);
-		return ($opt_qry->num_rows == 1) ? $opt_qry->row['value'] : '';
-	}
 }
 ?>
